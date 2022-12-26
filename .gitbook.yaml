@@ -1,0 +1,5 @@
+root: ./
+
+sructure:  
+  readme: README.adoc
+  summary: SUMMARY.adoc
