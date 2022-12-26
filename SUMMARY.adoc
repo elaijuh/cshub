@@ -8,4 +8,5 @@
 . link:06_programming/README.adoc[programming]
 . link:07_container/README.adoc[container]
 . link:08_application/README.adoc[application]
+.. link:08_application/wireguard_setup_on_archilinux.adoc[wireguard setup with iptables on archlinux]
 
