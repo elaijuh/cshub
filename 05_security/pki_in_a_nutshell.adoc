@@ -4,25 +4,39 @@ understand how PKI works and the typical use cases
 
 == concepts
 
-PKI:  public key infrastructure +
-PKCS: public key cryptography standard standard for signing or encrypting data +
-X.509 certificate: certificate binds an identity to a publick key using a digital signature. international telecommunication unit (ITU) standard defining the format of public key certificate + 
-CA: certificate authority +
-root CA certificate: top level, self-signed CA certificate +
-intermediate CA certificate: other CA certificates other than root +
-end-entity (leaf) certificate: to identity the user, it cannot issue other certificates +
-CSR: certificate signing request +
-signature: digital signature
-[literal]
-commonly used file extensions:
-  .pem: base64 encoded 
-  .crt,.cer: certificate sign request
-  .csr: certificate sign request
-encryption algorithms:
-  RSA
-  DSA
-  ECDSA
-  ed25519
+[width="50%" cols="2,5a"]
+|===
+|PKI
+|public key infrastructure
+|PKCS
+|public key cryptography standard standard for signing or encrypting data
+|X.509
+|certificate: certificate binds an identity to a publick key using a digital signature. international telecommunication unit (ITU) standard defining the format of public key certificate
+|CA
+|certificate authority
+|root CA certificate
+|top level, self-signed CA certificate
+|intermediate CA certificate
+|other CA certificates other than root
+|end-entity (leaf) certificate
+|to identity the user, it cannot issue other certificates +
+|CSR
+|certificate signing request
+|signature
+|digital signature
+|commonly used file extensions
+|
+* .pem: base64 encoded 
+* .crt/.cer: certificate sign request
+* .csr: certificate sign request
+|encryption algorithms
+|
+* RSA
+* DSA
+* ECDSA
+* ed25519
+|===
+
 
 == work flow (self-signed https)
 
@@ -36,15 +50,15 @@ encryption algorithms:
 
 image:../assets/pki_in_a_nutshell.jpg[]
 
-== example
+== example (openssl@3)
 
-. generate root CA private key using RSA4096
+1) generate root CA private key using RSA4096
 [,shell]
 ----
 openssl genrsa -out root-ca.key 4096
 ----
 
-. generate self-signed CA certificate
+2) generate self-signed CA certificate
 [,shell]
 ----
 CONFIG="
@@ -59,13 +73,13 @@ openssl req -x509 -new -nodes -key root-ca.key -sha256 -days 365 -out root-ca.pe
 cat root-ca.pem > root-ca.crt
 ----
 
-. generate intermediate CA private key using RSA4096
+3) generate intermediate CA private key using RSA4096
 [,shell]
 ----
 openssl genrsa -out intermediate-ca.key 4096
 ----
 
-. generate intermediate CA certificate, signed by root-ca.key
+4) generate intermediate CA certificate, signed by root-ca.key
 [,shell]
 ----
 openssl req -x509 -new -nodes -CAkey root-ca.key -CA root-ca.crt -key intermediate-ca.key -sha256 -days 365 -out intermediate-ca.pem -subj "/CN=intermediate-ca@${TIMESTAMP}" -config <(echo "${CONFIG}, pathlen:1") -extensions v3_ca
@@ -73,13 +87,13 @@ cat intermediate-ca.pem root-ca.pem > intermediate-ca.crt
 ----
 
 
-. generate leaf CA private key using EC
+5) generate leaf CA private key using EC
 [,shell]
 ----
 openssl ecparam -name prime256v1 -genkey -out server-ca.key
 ----
 
-. generate leaf CA certificate, signed by intermediate-ca.key
+6) generate leaf CA certificate, signed by intermediate-ca.key
 [,shell]
 ----
 openssl req -x509 -new -nodes -CAkey intermediate-ca.key -CA intermediate-ca.crt -key server-ca.key -sha256 -days 365 -out server-ca.pem -subj "/CN=server-ca@${TIMESTAMP}" -config <(echo "${CONFIG}, pathlen:0") -extensions v3_ca
